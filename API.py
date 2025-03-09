@@ -15,21 +15,45 @@ def encode_image(image_path):
 
 encoded_img = encode_image(PATH)
 
+WILDFIRE_TEST_DIRECTORY = '/Users/ashmit/Documents/code/Projects/wildfire-detection/data/test/wildfire_low'
+NO_WILDFIRE_TEST_DIRECTORY = '/Users/ashmit/Documents/code/Projects/wildfire-detection/data/test/not_wildfire_low'
 
 
 
-chat_completion = client.chat.completions.create(
-    messages=[
-        {
-            "role": "user",
+wildfire_messages = []
+
+print("wildfire predictions")
+for i in os.listdir(WILDFIRE_TEST_DIRECTORY):
+    img_path = f'{WILDFIRE_TEST_DIRECTORY}/{i}'
+    encoded_img = encode_image(img_path)
+    message = {
+        "role": "user",
             "content": [
-                {"type": "text", "text": "Tell me whether the following image is a wildfire or not. Output 1 for wildfire, 0 for not."},
+                {"type": "text", "text": "Tell me whether the following image is a wildfire or not. If wildfire return 1, if not return 0"},
                 {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_img}"}}
             ]
-        }
-    ],
-    model="gpt-4o",
-)
+    }
+    chat_completion = client.chat.completions.create(messages=[message], model="gpt-4o")
+    print(chat_completion.choices[0].message.content, i)
+    
 
+not_wildfire_messages = []
 
-print(chat_completion.choices[0].message.content)
+print("not wildfire predictions")
+for i in os.listdir(NO_WILDFIRE_TEST_DIRECTORY):
+    img_path = f'{NO_WILDFIRE_TEST_DIRECTORY}/{i}'
+    encode_image(img_path)
+    encoded_img = encode_image(img_path)
+    message = {
+        "role": "user",
+            "content": [
+                {"type": "text", "text": "Tell me whether the following image is a fire or not. If it is a fire only return 1, if not only return 0"},
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_img}"}}
+            ]
+    }
+    chat_completion = client.chat.completions.create(messages=[message], model="gpt-4o")
+    print(chat_completion.choices[0].message.content, i)
+    
+
+#chat_completion = client.chat.completions.create(messages=[not_wildfire_messages[0]], model="gpt-4o")
+#print("nw", chat_completion)
